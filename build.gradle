@@ -1,0 +1,32 @@
+plugins {
+	id 'java'
+}
+
+group = 'hu.bbox'
+version = '0.0.1-SNAPSHOT'
+
+subprojects {
+	repositories {
+		mavenCentral()
+	}
+
+	java {
+		toolchain {
+			languageVersion = JavaLanguageVersion.of(23)
+		}
+	}
+
+	test {
+		useJUnitPlatform()
+	}
+
+	tasks.configureEach {
+		if (it.name == 'genJaxb') {
+			it.dependsOn(':schema:build')
+		}
+		if (it.name == 'processResources') {
+			def task = (ProcessResources) it
+			task.duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+		}
+	}
+}

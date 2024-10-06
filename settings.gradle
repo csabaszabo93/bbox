@@ -1,0 +1,6 @@
+rootProject.name = 'services'
+include 'producer', 'proxy', 'schema'
+
+project(':producer').setProjectDir(file("$rootDir/services/producer"))
+project(':proxy').setProjectDir(file("$rootDir/services/proxy"))
+project(':schema').setProjectDir(file("$rootDir/libraries/schema"))
