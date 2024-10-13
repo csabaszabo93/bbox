@@ -16,10 +16,6 @@ subprojects {
 		}
 	}
 
-	test {
-		useJUnitPlatform()
-	}
-
 	tasks.configureEach {
 		if (it.name == 'genJaxb') {
 			it.dependsOn(':schema:build')
