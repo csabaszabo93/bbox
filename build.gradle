@@ -24,5 +24,9 @@ subprojects {
 			def task = (ProcessResources) it
 			task.duplicatesStrategy = DuplicatesStrategy.EXCLUDE
 		}
+		if (it.name == 'processTestResources') {
+			def task = (ProcessResources) it
+			task.duplicatesStrategy = DuplicatesStrategy.EXCLUDE
+		}
 	}
 }
