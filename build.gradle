@@ -17,9 +17,6 @@ subprojects {
 	}
 
 	tasks.configureEach {
-		if (it.name == 'genJaxb') {
-			it.dependsOn(':schema:build')
-		}
 		if (it.name == 'processResources') {
 			def task = (ProcessResources) it
 			task.duplicatesStrategy = DuplicatesStrategy.EXCLUDE
