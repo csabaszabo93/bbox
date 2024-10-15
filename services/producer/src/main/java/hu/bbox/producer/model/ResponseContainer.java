@@ -2,6 +2,12 @@ package hu.bbox.producer.model;
 
 import java.util.Optional;
 
+/**
+ * Data class to contain the result of a request handling, by intention it either has a response value, or
+ * an exception, which prevented to get the response value
+ *
+ * @param <T> type of response
+ */
 public class ResponseContainer<T> {
     private final T response;
     private final Throwable exception;

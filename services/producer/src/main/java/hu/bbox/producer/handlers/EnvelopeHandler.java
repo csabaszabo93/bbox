@@ -13,6 +13,10 @@ import java.util.function.BiConsumer;
 import java.util.function.Consumer;
 import java.util.function.Function;
 
+/**
+ * Handles the incoming {@link Envelope<String>} instance, forwards the message from the envelope to the configured
+ * underlying message handler.
+ */
 public class EnvelopeHandler implements BiConsumer<Envelope<String>, NettyOutbound> {
     private static final Logger LOGGER = LoggerFactory.getLogger(EnvelopeHandler.class);
     private final Consumer<String> registrationHandler;

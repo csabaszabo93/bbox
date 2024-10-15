@@ -4,6 +4,11 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
 
+/**
+ * Class to register the delegate objects
+ *
+ * @param <T> type of delegate object
+ */
 public class SimpleProxy<T> implements Proxy<T>{
     private final Map<String, T> delegateMap = new ConcurrentHashMap<>();
 

@@ -13,6 +13,14 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Future;
 
+/**
+ * Message sender which uses {@link NettyInbound} and {@link NettyOutbound} objects to implement an async communication
+ * Uses the tracking id in {@link hu.bbox.messaging.message.Envelope} to synchronize the returned future objects
+ * with the received response.
+ *
+ * @param <T> request type
+ * @param <U> response type
+ */
 public class NettyMessageSender<T extends Message<?>, U extends Message<?>> implements AsyncMessageSender<T, U> {
     private static final Logger LOGGER = LoggerFactory.getLogger(NettyMessageSender.class);
     private final Map<String, CompletableFuture<U>> futureResponses = new ConcurrentHashMap<>();
@@ -20,7 +28,6 @@ public class NettyMessageSender<T extends Message<?>, U extends Message<?>> impl
     private final NettyInbound inbound;
     private final MessageSerializer<U> inboundParser;
     private final MessageSerializer<T> outboundParser;
-    private CompletableFuture<U> responseFuture = new CompletableFuture<>();
 
     public NettyMessageSender(
             NettyInbound inbound,

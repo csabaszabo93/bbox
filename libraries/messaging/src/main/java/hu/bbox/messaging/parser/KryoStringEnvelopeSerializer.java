@@ -9,6 +9,9 @@ import hu.bbox.messaging.message.MessageType;
 
 import java.io.ByteArrayOutputStream;
 
+/**
+ * {@link MessageSerializer} implementation to serialise {@link Envelope<String>} instances using Kryo
+ */
 public class KryoStringEnvelopeSerializer implements MessageSerializer<Envelope<String>> {
     private final Kryo kryo = new Kryo();
 

@@ -4,14 +4,18 @@ import hu.bbox.producer.model.ResponseContainer;
 import jakarta.xml.soap.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import org.w3c.dom.Node;
 import org.w3c.dom.NodeList;
 
-import javax.xml.namespace.QName;
-import java.io.*;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.io.InputStream;
 import java.util.function.Function;
 import java.util.function.UnaryOperator;
 
+/**
+ * Handles the soap xml string received in a request envelope, with o simplified exception handling
+ */
 public class SimpleSoapRequestHandler implements Function<String, ResponseContainer<String>> {
     private static final Logger LOGGER = LoggerFactory.getLogger(SimpleSoapRequestHandler.class);
     private final UnaryOperator<String> productVatStore;
