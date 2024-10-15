@@ -14,7 +14,6 @@ import org.springframework.context.annotation.Bean;
 import org.springframework.core.io.ClassPathResource;
 import org.springframework.core.io.InputStreamResource;
 import reactor.netty.DisposableServer;
-import reactor.netty.tcp.SslProvider;
 import reactor.netty.tcp.TcpServer;
 
 import java.io.IOException;

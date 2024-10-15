@@ -63,7 +63,7 @@ public class ProxyController {
         } catch (TimeoutException e) {
             responseEntity = ResponseEntity
                     .status(504)
-                    .body("Timed out while waiting for producer response: " + producerId);;
+                    .body("Timed out while waiting for producer response: " + producerId);
         } catch (InterruptedException e) {
             Thread.currentThread().interrupt();
             responseEntity = getErrorEntity(producerId);
