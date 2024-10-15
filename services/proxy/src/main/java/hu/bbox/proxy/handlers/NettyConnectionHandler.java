@@ -7,6 +7,8 @@ import hu.bbox.proxy.Proxy;
 import hu.bbox.proxy.message.AsyncMessageSender;
 import hu.bbox.proxy.message.NettyMessageSender;
 import org.reactivestreams.Publisher;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.lang.NonNull;
 import reactor.core.publisher.Mono;
 import reactor.netty.Connection;
@@ -27,6 +29,7 @@ import java.util.function.Supplier;
  * When the connection is closed the message sender is removed from the proxy instance
  */
 public class NettyConnectionHandler implements ConnectionHandler {
+    private static final Logger LOGGER = LoggerFactory.getLogger(NettyConnectionHandler.class);
     private final Map<NettyInbound, String> inboundIds = new ConcurrentHashMap<>();
     private final Map<Connection, String> connectionIds = new ConcurrentHashMap<>();
     private final MessageSerializer<Envelope<String>> messageSerializer;
@@ -50,13 +53,16 @@ public class NettyConnectionHandler implements ConnectionHandler {
      */
     @Override
     public Publisher<Void> apply(NettyInbound inbound, NettyOutbound outbound) {
+        LOGGER.trace("New connection initialized");
         String providerId = inboundIds.remove(inbound);
         Objects.requireNonNull(providerId);
         Envelope<String> registrationEnvelope = new Envelope<>(MessageType.REGISTRATION, providerId);
         AsyncMessageSender<Envelope<String>, Envelope<String>> messageSender =
                 new NettyMessageSender<>(inbound, outbound, messageSerializer, messageSerializer);
         proxy.registerDelegate(providerId, messageSender);
+        LOGGER.trace("New message sender registered for {}", providerId);
         messageSender.send(registrationEnvelope);
+        LOGGER.trace("Registration message sent {}", registrationEnvelope);
         return Mono.never();
     }
 
@@ -67,10 +73,12 @@ public class NettyConnectionHandler implements ConnectionHandler {
      */
     @Override
     public void accept(Connection connection) {
+        LOGGER.trace("New connection created");
         NettyInbound inbound = connection.inbound();
         String id = idGenerator.get();
         inboundIds.put(inbound, id);
         connectionIds.put(connection, id);
+        LOGGER.trace("Assigned id {}", id);
     }
 
     /**
@@ -82,8 +90,10 @@ public class NettyConnectionHandler implements ConnectionHandler {
     @Override
     public void onStateChange(@NonNull Connection connection, @NonNull State newState) {
         if (newState == State.DISCONNECTING) {
+            LOGGER.trace("Connection closed");
             String id = connectionIds.remove(connection);
             proxy.removeDelegate(id);
+            LOGGER.trace("Removed producer {}", id);
         }
     }
 }

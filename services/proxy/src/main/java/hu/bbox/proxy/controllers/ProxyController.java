@@ -4,6 +4,8 @@ import hu.bbox.messaging.message.Envelope;
 import hu.bbox.messaging.message.MessageType;
 import hu.bbox.proxy.Proxy;
 import hu.bbox.proxy.message.AsyncMessageSender;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -26,6 +28,7 @@ import java.util.concurrent.TimeoutException;
  */
 @Controller
 public class ProxyController {
+    private final Logger LOGGER = LoggerFactory.getLogger(ProxyController.class);
     private final Proxy<AsyncMessageSender<Envelope<String>, Envelope<String>>> proxy;
     private final int delegateTimeout;
     private final TimeUnit delegateTimeoutUnit;
@@ -43,6 +46,7 @@ public class ProxyController {
     public ResponseEntity<String> forwardMessage(
             @RequestHeader(name = "X-Producer-Id") String producerId,
             @RequestBody String message) {
+        LOGGER.info("Processing request");
         return proxy.getDelegate(producerId)
                 .map(delegate -> getResponseEntity(delegate, producerId, message))
                 .orElse(ResponseEntity.status(404).body("No producer was find with id: " + producerId));
@@ -55,12 +59,18 @@ public class ProxyController {
         ResponseEntity<String> responseEntity;
         try {
             Envelope<String> requestEnvelope = new Envelope<>(MessageType.REQUEST, message);
+            LOGGER.info("Sending request to producer {}", producerId);
+            LOGGER.trace("Envelope is {}", requestEnvelope);
             Future<Envelope<String>> futureEnvelope = delegate.request(requestEnvelope);
             Envelope<String> envelope = futureEnvelope.get(delegateTimeout, delegateTimeoutUnit);
+            LOGGER.info("Response received from producer {}", producerId);
+            LOGGER.trace("Envelope is {}", envelope);
             responseEntity = ResponseEntity.ok(envelope.message());
         } catch (ExecutionException e) {
+            LOGGER.error("Failed to get response from producer {}", producerId);
             responseEntity = getErrorEntity(producerId);
         } catch (TimeoutException e) {
+            LOGGER.error("Timed out while waiting for response from {}", producerId);
             responseEntity = ResponseEntity
                     .status(504)
                     .body("Timed out while waiting for producer response: " + producerId);

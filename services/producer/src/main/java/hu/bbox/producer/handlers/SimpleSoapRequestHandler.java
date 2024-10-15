@@ -26,6 +26,7 @@ public class SimpleSoapRequestHandler implements Function<String, ResponseContai
         try {
             this.soapMessageFactory = MessageFactory.newInstance();
         } catch (SOAPException e) {
+            LOGGER.debug("Failed to create soap message factory");
             throw new RuntimeException(e);
         }
     }
@@ -37,17 +38,21 @@ public class SimpleSoapRequestHandler implements Function<String, ResponseContai
             InputStream inputStream = new ByteArrayInputStream(soapEnvelopeIn.getBytes());
             String product = getProductFromEnvelope(inputStream);
             String productVAT = productVatStore.apply(product);
+            LOGGER.info("Received product's vat from store");
+            LOGGER.trace("VAT is {}", productVAT);
             SOAPMessage responseMessage = buildResponse(productVAT);
             ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
             responseMessage.writeTo(outputStream);
             responseContainer = new ResponseContainer<>(outputStream.toString());
         } catch (Exception e) {
+            LOGGER.error("Failed to process soap request");
             responseContainer = new ResponseContainer<>(e);
         }
         return responseContainer;
     }
 
     private SOAPMessage buildResponse(String productVAT) throws SOAPException {
+        LOGGER.info("Creating response soap message");
         SOAPMessage responseMessage = soapMessageFactory.createMessage();
         responseMessage.getSOAPPart().getEnvelope()
                 .addNamespaceDeclaration("bbox", "http://www.bbox.hu/soap");
@@ -55,13 +60,17 @@ public class SimpleSoapRequestHandler implements Function<String, ResponseContai
                 .getSOAPBody()
                 .addChildElement("bbox:ProductVAT")
                 .setValue(productVAT);
+        LOGGER.info("Response soap message created");
         return responseMessage;
     }
 
     private String getProductFromEnvelope(InputStream inputStream) throws IOException, SOAPException {
+        LOGGER.info("Parsing request soap message");
         SOAPMessage requestMessage = soapMessageFactory.createMessage(new MimeHeaders(), inputStream);
         SOAPBody soapBody = requestMessage.getSOAPBody();
         NodeList nodes = soapBody.getElementsByTagName("bbox:RequestVATOfProduct");
-        return nodes.item(0).getFirstChild().getNodeValue().strip();
+        String product = nodes.item(0).getFirstChild().getNodeValue().strip();
+        LOGGER.trace("Extracted from soap request: {}", product);
+        return product;
     }
 }

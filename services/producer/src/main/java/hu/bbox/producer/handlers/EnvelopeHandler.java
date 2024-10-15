@@ -34,7 +34,9 @@ public class EnvelopeHandler implements BiConsumer<Envelope<String>, NettyOutbou
 
     @Override
     public void accept(Envelope<String> envelope, NettyOutbound out) {
+        LOGGER.info("Starting to handle incoming envelope");
         String message = envelope.message();
+        LOGGER.trace("Received message: {}", message);
         switch (envelope.messageType()) {
             case REGISTRATION -> registrationHandler.accept(message);
             case REQUEST -> {
@@ -57,18 +59,21 @@ public class EnvelopeHandler implements BiConsumer<Envelope<String>, NettyOutbou
     }
 
     private void sendFailure(String trackingId, String message, NettyOutbound out) {
+        LOGGER.info("Sending failure");
         Envelope<String> responseEnvelope =
                 new Envelope<>(trackingId, MessageType.FAILURE, message);
         sendEnvelope(responseEnvelope, out);
     }
 
     private void sendResponse(String trackingId, String response, NettyOutbound out) {
+        LOGGER.info("Sending response");
         Envelope<String> responseEnvelope =
                 new Envelope<>(trackingId, MessageType.RESPONSE, response);
         sendEnvelope(responseEnvelope, out);
     }
 
     private void sendEnvelope(Envelope<String> envelope, NettyOutbound out) {
+        LOGGER.trace("Outgoing envelope {}", envelope);
         byte[] bytes = messageSerializer.serialize(envelope);
         out.sendByteArray(Mono.just(bytes)).then().subscribe();
     }

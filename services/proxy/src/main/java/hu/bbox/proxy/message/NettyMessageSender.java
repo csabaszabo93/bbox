@@ -47,9 +47,11 @@ public class NettyMessageSender<T extends Message<?>, U extends Message<?>> impl
                 .asByteArray()
                 .map(inboundParser::deserialize)
                 .subscribe(message -> {
+                    LOGGER.trace("Response received {}", message.trackingId());
                     CompletableFuture<U> future = futureResponses.get(message.trackingId());
                     if (future != null) {
                         future.complete(message);
+                        LOGGER.trace("Future completed {}", message.trackingId());
                         return;
                     }
                     LOGGER.warn("No future was found for tracking id {}", message.trackingId());
@@ -65,9 +67,11 @@ public class NettyMessageSender<T extends Message<?>, U extends Message<?>> impl
     @Override
     public Future<U> request(T message) {
         String trackingId = message.trackingId();
+        LOGGER.trace("Assigning tracking id to request {}", trackingId);
         CompletableFuture<U> futureResponse = new CompletableFuture<>();
         futureResponses.put(trackingId, futureResponse);
         send(message);
+        LOGGER.trace("Request sent {}", trackingId);
         return futureResponse;
     }
 }
